@@ -1,0 +1,33 @@
+name: Build and Publish test
+
+on:
+  # run it on push to the default repository branch
+  # push:
+  #   branches: [main]
+  # run it during pull request
+  #pull_request:
+  workflow_dispatch:
+
+jobs:
+  # define job to build and publish docker image
+  build-and-push-docker-image:
+    name: Build Docker image and push to repositories
+    # run only when code is compiling and tests are passing
+    runs-on: ubuntu-latest
+
+    # steps to perform in job
+    steps:
+      - name: Deploy Backend Server
+        uses: appleboy/ssh-action@master
+        with:
+          debug: true
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd cicd
+            docker-compose pull && docker-compose up -d
+            cd ..
+            rm -rf ./cicd
+            docker system prune --all --force
